@@ -1,0 +1,15 @@
+[Unit]
+Description=F1 plots generator for moncapiten.com website
+After=network.target
+
+[Service]
+Type=simple
+User=moncapiten
+WorkingDirectory=/home/moncapiten/site/f1plots
+Environment="PATH=/home/moncapiten/.local/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/home/moncapiten/site/f1plots/startingServer.sh
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

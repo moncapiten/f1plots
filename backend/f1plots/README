@@ -1,0 +1,27 @@
+OK so
+
+- apiConnect.py file contains everything necessary to connect to the openf1 api and obtain the race data
+
+- plotGenerator.py contains the function that creates the plot from the data gathered by the api
+
+- flaskServer.py put up the flask server and the app for the two plots, which can be found at 0.0.0.0:5000/plot[1,2].png
+
+- startingServer.sh runs the server but not through python/flask, it uses gunicorn that is production-ready, multithreaded etc
+
+- everything is run automatically by the systemd process f1plots.system that can be found in /etc/systemd/system and is mostly
+    based upon the your-service.system used by whisperBot( yes i should change the name of that one)
+
+- to run after modifying the systemd file run
+	sudo systemctl daemon-reload
+	sudo systemctl enable f1plots.service
+	sudo systemctl start f1plots.service
+	( sudo systemctl status f1plots.service )
+
+- if simply the files that systemd launches are modified( e.g. the startingServer.sh or the python files) this is enough
+	sudo systemctl daemon-reload
+	sudo systemctl restart f1plots.service
+
+- the website fetches the images here created, obviously the gunicorn process is local, and I'm behind CGNAT so I can't port-forward
+    so we're once again using tailscale funneling capabilities here, as in the minecraft server
+    we ran tailscale funnel --bg 5000 which exposes whatever the content of the 5000 ports are in a SAFE way on a given tailscale
+    URL, https://monca.tail6bbac.ts.net/ in this specific case
