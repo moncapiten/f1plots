@@ -11,11 +11,14 @@ def generate_plots(year=2025):
         for driver_num, points in standings 
     ]
 
-    # --- Plot 1: Points Distribution ---
-    fig1, ax1 = plt.subplots(figsize=(12, 6))
+    # Prepare data for plotting
     plt_pts = [points for _, points, _, _, _ in complete_standings]
     plt_names = [name + '\n' + str(num) for num, _, name, _, _ in complete_standings]
     plt_clrs = ['#' + color for _, _, _, _, color in complete_standings]
+
+    # --- Plot 1: Points Distribution ---
+    fig1, ax1 = plt.subplots(figsize=(12, 6))
+    fig1.patch.set_facecolor('#333333')  # Dark gray background
     ax1.set_facecolor('#333333')  # Dark gray background
     ax1.bar(plt_names, plt_pts, color=plt_clrs)
     ax1.hlines(plt_pts[0] - 25, 0, len(plt_names) - 1, colors='black', linestyles='--')
@@ -34,6 +37,7 @@ def generate_plots(year=2025):
 
     # --- Plot 2: Points History ---
     fig2, ax2 = plt.subplots(figsize=(12, 6))
+    fig2.patch.set_facecolor('#333333')  # Dark gray background
     ax2.set_facecolor('#333333')  # Dark gray background
     for key, values in driver_history.items():
         label = driver_names.get(key, f"Driver {key}")
