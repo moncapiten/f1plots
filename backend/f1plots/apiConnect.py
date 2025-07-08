@@ -3,6 +3,8 @@ import json
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+import time
+
 
 # F1 Points system
 RACE_POINTS = {
@@ -56,6 +58,7 @@ def get_all_season_results(year=2025, debug=False):
         race_sessions.sort(key=lambda x: x['date_start'])
         
         for session in race_sessions:
+            time.sleep(0.5)  # To avoid hitting API rate limits
             session_key = session['session_key']
             session_name = session.get('session_name', 'Unknown')
             meeting_name = session.get('country_name', 'Unknown')
@@ -87,6 +90,7 @@ def get_all_season_results(year=2025, debug=False):
                             driver_colors[driver_num] = color
             
             # Get positions for this session
+            time.sleep(0.5)  # To avoid hitting API rate limits
             position_response = requests.get(
                 "https://api.openf1.org/v1/position",
                 params={'session_key': session_key}

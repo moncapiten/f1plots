@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import io
 from apiConnect import *
+import datetime
 
-def generate_plots(year=2025):
+def generate_plots(year= datetime.date.today().year):
     driver_positions, driver_points, driver_names, driver_teams, driver_colors, driver_history, session_names, sessionCounter = get_all_season_results(year)
 
     standings = sorted(driver_points.items(), key=lambda x: x[1], reverse=True)
@@ -21,6 +22,9 @@ def generate_plots(year=2025):
     fig1.patch.set_facecolor('#333333')  # Dark gray background
     ax1.set_facecolor('#333333')  # Dark gray background
     ax1.bar(plt_names, plt_pts, color=plt_clrs)
+    # Add point labels on top of bars
+    for i, (name, points, color) in enumerate(zip(plt_names, plt_pts, plt_clrs)):
+        ax1.text(i, points + 1, str(points), ha='center', va='bottom', color=color, fontsize=13)
     ax1.hlines(plt_pts[0] - 25, 0, len(plt_names) - 1, colors='black', linestyles='--')
     ax1.set_xlabel('Drivers')
     ax1.set_ylabel('Points')
