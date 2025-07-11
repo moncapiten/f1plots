@@ -35,13 +35,20 @@
     
   </p>
 
+  <div>
+      <label for="yearSelectorLabel">Select Year:</label>
+        <select id="yearSelector" onchange="updatePlots()">
+      </select>
+  </div>
+
+
 
   
     <div class="plot-container">
-      <img src="https://monca.tail6bbac.ts.net/plot1.png" alt="Points per Driver Plot" class="plot-image">
+      <img src="https://monca.tail6bbac.ts.net/plot1.png" id="plot1" alt="Points per Driver Plot" class="plot-image">
     </div>
     <div class="plot-container">
-      <img src="https://monca.tail6bbac.ts.net/plot2.png" alt="Points History Plot" class="plot-image">
+      <img src="https://monca.tail6bbac.ts.net/plot2.png" id="plot2" alt="Points History Plot" class="plot-image">
     </div>
 
 
@@ -50,5 +57,52 @@
   <footer class="footer">
     This website is unofficial and is not associated in any way with the Formula 1 companies. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX and related marks are trade marks of Formula One Licensing B.V.
   </footer>
+
+
+
+
+
+
+
+
+
+<script>
+        // Populate year selector
+        function populateYearSelector() {
+            selector = document.getElementById('yearSelector');
+            const currentYear = new Date().getFullYear();
+            
+            // Add years from current year back to whenever your data starts
+            for (let year = currentYear; year >= 2020; year--) {
+                option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                if (year === currentYear) {
+                    option.selected = true;
+                }
+                selector.appendChild(option);
+            }
+        }
+        
+        // Update plots when year changes
+        function updatePlots() {
+            const selectedYear = document.getElementById('yearSelector').value;
+            const plot1 = document.getElementById('plot1');
+            const plot2 = document.getElementById('plot2');
+            
+            // Add timestamp to prevent caching issues
+            const timestamp = new Date().getTime();
+
+            plot1.src = `http://127.0.0.1:5000/plot1.png?year=${selectedYear}&t=${timestamp}`;
+            plot2.src = `http://127.0.0.1:5000/plot2.png?year=${selectedYear}&t=${timestamp}`;
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            populateYearSelector();
+        });
+
+        
+    </script>
 </body>
 </html>
