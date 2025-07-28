@@ -16,6 +16,42 @@
   <link rel="stylesheet" href="../template/inputStyle.css">
 
   
+  <style>
+  .plot-container {
+    position: relative;
+    width: fit-content;
+    display: inline-block;
+  }
+
+  .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #444;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+  }
+
+  @keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  .plot-image {
+    display: block;
+    max-width: 100%;
+  }
+
+  .hidden {
+    display: none;
+  }
+</style>
+
 </head>
 
 <body>
@@ -37,12 +73,15 @@
 
 
   
-    <div class="plot-container">
-      <img src="https://monca.tail6bbac.ts.net/plot1.png" alt="Points per Driver Plot" class="plot-image">
-    </div>
-    <div class="plot-container">
-      <img src="https://monca.tail6bbac.ts.net/plot2.png" alt="Points History Plot" class="plot-image">
-    </div>
+  <div class="plot-container">
+    <div class="spinner"></div>
+    <img src="https://monca.tail6bbac.ts.net/plot.png" alt="Points per Driver Plot" class="plot-image" onload="this.previousElementSibling.classList.add('hidden')">
+  </div>
+  <div class="plot-container">
+    <div class="spinner"></div>
+    <img src="https://monca.tail6bbac.ts.net/plot.png" alt="Points History Plot" class="plot-image" onload="this.previousElementSibling.classList.add('hidden')">
+  </div>
+
 
 
 
