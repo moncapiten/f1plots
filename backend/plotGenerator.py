@@ -4,7 +4,8 @@ from apiConnect import *
 import datetime
 
 def generate_plots(year= datetime.date.today().year):
-    driver_positions, driver_points, driver_names, driver_teams, driver_colors, driver_history, session_names, sessionCounter = get_all_season_results(year)
+    driver_positions, driver_points, driver_names, driver_teams, driver_colors, driver_history, session_names, sessionCounter = get_all_season_results(year, debug=True)
+    print(session_names)
 
     standings = sorted(driver_points.items(), key=lambda x: x[1], reverse=True)
     complete_standings = [ 

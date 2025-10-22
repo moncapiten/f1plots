@@ -58,14 +58,17 @@ def get_all_season_results(year=2025, debug=False):
         race_sessions.sort(key=lambda x: x['date_start'])
         
         for session in race_sessions:
-            time.sleep(0.5)  # To avoid hitting API rate limits
+#            time.sleep(0.5)  # To avoid hitting API rate limits
             session_key = session['session_key']
             session_name = session.get('session_name', 'Unknown')
             meeting_name = session.get('country_name', 'Unknown')
             is_sprint = session_name == 'Sprint'
             
-            session_names.append(meeting_name if not is_sprint else meeting_name + " Sprint")
-            
+#            print(session)
+#            session_names.append(session_name if not is_sprint else session_name + " Sprint")
+            nameToBeUsed = meeting_name if session.get('country_code', 'Unknown') != 'ITA' and session.get('country_code') != 'USA' else session.get('circuit_short_name', 'Unknown')
+            session_names.append(nameToBeUsed if not is_sprint else nameToBeUsed + " Sprint")
+
             if debug:
                 print(f"\nDebug: Processing session {session_key} - {meeting_name} - {session_name}")
             
@@ -91,18 +94,22 @@ def get_all_season_results(year=2025, debug=False):
             
             # Get positions for this session
             time.sleep(0.5)  # To avoid hitting API rate limits
+            print(f"Fetching positions for session {session_key}...")
             position_response = requests.get(
                 "https://api.openf1.org/v1/position",
                 params={'session_key': session_key}
             )
-            
+
             if position_response.status_code == 200:
                 positions = position_response.json()
                 if positions:
                     # Get final positions for each driver
+#                    final_positions = positions
                     final_positions = get_final_positions(positions)
                     
-
+                    print(final_positions)
+                    print(type(final_positions))
+                    quit()
                     # Process results
                     for driver_num, position in final_positions.items():
                         # Initialize driver data if not exists
@@ -110,7 +117,6 @@ def get_all_season_results(year=2025, debug=False):
                             driver_positions[driver_num] = [None] * sessionCounter
                             driver_points[driver_num] = 0
                             driver_history[driver_num] = [0] * sessionCounter
-                        
 
                         
                         # Add position to driver's list
