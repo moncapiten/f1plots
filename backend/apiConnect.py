@@ -57,20 +57,23 @@ def get_all_season_results(year=2025, debug=False):
         # Sort sessions by date
         race_sessions.sort(key=lambda x: x['date_start'])
         
+
+        # analyze each session one by one
         for session in race_sessions:
-#            time.sleep(0.5)  # To avoid hitting API rate limits
+
+            # Get sessions details
             session_key = session['session_key']
             session_name = session.get('session_name', 'Unknown')
             meeting_name = session.get('country_name', 'Unknown')
             is_sprint = session_name == 'Sprint'
             
-#            print(session)
-#            session_names.append(session_name if not is_sprint else session_name + " Sprint")
+            # Obtain a usable, understandable and UNIQUE name to be used for each session
             nameToBeUsed = meeting_name if session.get('country_code', 'Unknown') != 'ITA' and session.get('country_code') != 'USA' else session.get('circuit_short_name', 'Unknown')
             session_names.append(nameToBeUsed if not is_sprint else nameToBeUsed + " Sprint")
 
+            # Debug output
             if debug:
-                print(f"\nDebug: Processing session {session_key} - {meeting_name} - {session_name}")
+                print(f"\nDebug: Processing session {session_key} - {nameToBeUsed} - {session_name}")
             
             # Get driver names for this session (if we don't have them yet)
             if not driver_names:
@@ -91,59 +94,62 @@ def get_all_season_results(year=2025, debug=False):
                             driver_teams[driver_num] = team_name
                         if driver_num and color:
                             driver_colors[driver_num] = color
-            
-            # Get positions for this session
+
+
+
+
+            # Get positions for this sessions, either with method 1( session_result endpoint) or method 2 (position endpoint)
+
             time.sleep(0.5)  # To avoid hitting API rate limits
-            print(f"Fetching positions for session {session_key}...")
-            position_response = requests.get(
-                "https://api.openf1.org/v1/position",
+
+            # Method 1: session_result endpoint
+
+            session_result_response = requests.get(
+                "https://api.openf1.org/v1/session_result",
                 params={'session_key': session_key}
             )
 
-            if position_response.status_code == 200:
-                positions = position_response.json()
-                if positions:
-                    # Get final positions for each driver
-#                    final_positions = positions
-                    final_positions = get_final_positions(positions)
-                    
-                    print(final_positions)
-                    print(type(final_positions))
-                    quit()
-                    # Process results
-                    for driver_num, position in final_positions.items():
-                        # Initialize driver data if not exists
-                        if driver_num not in driver_positions:
-                            driver_positions[driver_num] = [None] * sessionCounter
-                            driver_points[driver_num] = 0
-                            driver_history[driver_num] = [0] * sessionCounter
+            if session_result_response.status_code == 200 and session_result_response.json() != []:
+                positions = session_result_response.json()
+                cleaned_positions = remove_padding(positions)
+            elif session_result_response.status_code == 200 and session_result_response.json() == []:
+                # Method 2: position endpoint
+                cleaned_positions = get_session_result_position_endpoint(session_key) ### YOU GOT TO HERE DUMBASS YOU GOTTA ADD TEH DATA PROCESSING USING CLEAD POSITIONS AS DATA INPUT AND CHECK FOR GOOD INPUT AND THE REST SHOULD EB GOOD
+                
 
-                        
-                        # Add position to driver's list
-                        driver_positions[driver_num].append(position)
-                        
-                        # Calculate and add points
-                        points_table = SPRINT_POINTS if is_sprint else RACE_POINTS
-                        points = points_table.get(position, 0)
-                        driver_points[driver_num] += points
-                        driver_history[driver_num].append(driver_points[driver_num])
-                        
-                        if debug:
-                            print(f"  Driver {driver_num}: P{position} ({points} pts)")
+            # Calculating driver's points given their position
+            for driver_num, position in cleaned_positions.items():
+                # Initialize driver data if not exists
+                if driver_num not in driver_positions:
+                    driver_positions[driver_num] = [None] * sessionCounter
+                    driver_points[driver_num] = 0
+                    driver_history[driver_num] = [0] * sessionCounter
 
-                    for driver_num in driver_positions:
-                        if driver_num not in final_positions:
-                            # If driver has no position in this session, we can assume they didn't participate
-                            driver_positions[driver_num].append(None)
-                            driver_history[driver_num].append(driver_points[driver_num])
+                
+                # Add position to driver's list
+                driver_positions[driver_num].append(position)
+                
+                # Calculate and add points
+                points_table = SPRINT_POINTS if is_sprint else RACE_POINTS
+                points = points_table.get(position, 0)
+                driver_points[driver_num] += points
+                driver_history[driver_num].append(driver_points[driver_num])
+                
+                if debug:
+                    print(f"  Driver {driver_num}: {f'P{position}' if position not in ['dnf', 'dsq', 'dns'] else position} ({points} pts)")
 
-                else:
-                    print(f"  No position data found")
-            else:
-                print(f"  Failed to get position data (status: {position_response.status_code})")
-            
+            for driver_num in driver_positions:
+                if driver_num not in cleaned_positions:
+                    # If driver has no position in this session, we can assume they didn't participate
+                    driver_positions[driver_num].append(None)
+                    driver_history[driver_num].append(driver_points[driver_num])
+
+
+
             sessionCounter += 1
-        
+
+
+
         # Fill in driver names for any remaining drivers
         fill_missing_driver_names(driver_names, driver_teams, driver_colors, driver_positions.keys(), year)
         
@@ -176,6 +182,26 @@ def get_final_positions(positions):
             final_positions[driver_number] = final_position
     
     return final_positions
+
+
+def remove_padding(session_results):
+    """
+    Remove any padding None values from session results
+    """
+    cleaned_results = {}
+    for driver_result in session_results:
+#        print(driver_result)
+        if driver_result['dns']:
+            cleaned_results[driver_result['driver_number']] = 'dns'
+        elif driver_result['dsq']:
+            cleaned_results[driver_result['driver_number']] = 'dsq'
+        elif driver_result['dnf']:
+            cleaned_results[driver_result['driver_number']] = 'dnf'
+        else:
+            cleaned_results[driver_result['driver_number']] = driver_result['position']
+    
+    return cleaned_results
+
 
 def fill_missing_driver_names(driver_names, driver_teams, driver_colors, driver_numbers, year):
     """
@@ -241,6 +267,33 @@ def fill_missing_driver_names(driver_names, driver_teams, driver_colors, driver_
                 driver_names[driver_num] = 'UNK'
     
                         
+
+
+
+def get_session_result_position_endpoint(session_key):
+    """
+    Get session results using method 2 (position endpoint)
+    """
+    positions_response = requests.get(
+        "https://api.openf1.org/v1/position",
+        params={'session_key': session_key}
+    )
+
+    if positions_response.status_code == 200:
+        positions = positions_response.json()
+        
+        output_dict = {}
+        for i in positions:
+            output_dict[i['driver_number']] = i['position']
+        return output_dict
+    return {}
+
+
+
+
+
+
+
 
 
 def print_summary(complete_standings, driver_positions, sessionCounter):
