@@ -15,7 +15,7 @@ SPRINT_POINTS = {
     1: 8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8: 1
 }
 
-def get_all_season_results(year=2025, debug=False):
+def get_all_season_results(year=2026, debug=False):
     """
     Fetches all F1 race and sprint results for the specified season
     Returns three dictionaries:
@@ -68,7 +68,11 @@ def get_all_season_results(year=2025, debug=False):
             is_sprint = session_name == 'Sprint'
             
             # Obtain a usable, understandable and UNIQUE name to be used for each session
-            nameToBeUsed = meeting_name if session.get('country_code', 'Unknown') != 'ITA' and session.get('country_code') != 'USA' else session.get('circuit_short_name', 'Unknown')
+            nameToBeUsed = meeting_name if session.get('country_code', 'Unknown') != 'ITA' and session.get('country_code') != 'USA' and session.get('country_code') != 'ESP' else session.get('circuit_short_name', 'Unknown')
+            if nameToBeUsed == 'United Kingdom':
+                nameToBeUsed = 'UK'
+            if nameToBeUsed == 'United Arab Emirates':
+                nameToBeUsed = 'UAE'
             session_names.append(nameToBeUsed if not is_sprint else nameToBeUsed + " Sprint")
 
             # Debug output
@@ -318,7 +322,7 @@ def print_summary(complete_standings, driver_positions, sessionCounter):
     print(f"\nTOTAL RACES/SPRINTS PROCESSED: {sessionCounter}")
 
 
-def main(year = 2025, summary_printout=False, verbose=False, compact=False):
+def main(year = 2026, summary_printout=False, verbose=False, compact=False):
     """Main function to run the script"""
 #    year = 2025  # Change this to get different seasons
     
@@ -422,7 +426,7 @@ def main(year = 2025, summary_printout=False, verbose=False, compact=False):
     plt.show()
 
 
-def plotting(year = 2025):
+def plotting(year = 2026):
 
     driver_positions, driver_points, driver_names, driver_teams, driver_colors, driver_history, session_names, sessionCounter = get_all_season_results(year)
 
