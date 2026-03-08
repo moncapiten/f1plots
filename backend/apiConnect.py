@@ -107,19 +107,25 @@ def get_all_season_results(year=2026, debug=False):
             time.sleep(0.5)  # To avoid hitting API rate limits
 
             # Method 1: session_result endpoint
-
+#            print(session_key) #########################################################################################################################################################
             session_result_response = requests.get(
                 "https://api.openf1.org/v1/session_result",
                 params={'session_key': session_key}
             )
 
             if session_result_response.status_code == 200 and session_result_response.json() != []:
+#                print('a')#########################################################################################################################################################
                 positions = session_result_response.json()
                 cleaned_positions = remove_padding(positions)
             elif session_result_response.status_code == 200 and session_result_response.json() == []:
+#                print('b')#########################################################################################################################################################
                 # Method 2: position endpoint
                 cleaned_positions = get_session_result_position_endpoint(session_key) ### YOU GOT TO HERE DUMBASS YOU GOTTA ADD TEH DATA PROCESSING USING CLEAD POSITIONS AS DATA INPUT AND CHECK FOR GOOD INPUT AND THE REST SHOULD EB GOOD
-                
+            else:
+#                print('c')#########################################################################################################################################################
+                break
+
+#            print(cleaned_positions)######################################################################################################################################################
 
             # Calculating driver's points given their position
             for driver_num, position in cleaned_positions.items():
@@ -425,7 +431,7 @@ def main(year = 2026, summary_printout=False, verbose=False, compact=False):
     plt.grid(linestyle='-.', which='both')
     plt.show()
 
-
+'''
 def plotting(year = 2026):
 
     driver_positions, driver_points, driver_names, driver_teams, driver_colors, driver_history, session_names, sessionCounter = get_all_season_results(year)
@@ -464,3 +470,4 @@ def plotting(year = 2026):
     plt.ylabel("Points")
     plt.grid(linestyle='-.', which='both')
     plt.show()
+'''
