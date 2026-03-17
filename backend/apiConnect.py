@@ -58,6 +58,7 @@ def get_all_season_results(year=2026, debug=False):
         race_sessions.sort(key=lambda x: x['date_start'])
         
 
+        print(race_sessions)#########################################################################################################################################################
         # analyze each session one by one
         for session in race_sessions:
 
@@ -66,6 +67,33 @@ def get_all_season_results(year=2026, debug=False):
             session_name = session.get('session_name', 'Unknown')
             meeting_name = session.get('country_name', 'Unknown')
             is_sprint = session_name == 'Sprint'
+
+
+            #moved this all to the beginning of the session analysis loop in order to not add the name if the session has no available results
+            time.sleep(0.5)  # To avoid hitting API rate limits
+
+            # Method 1: session_result endpoint
+#            print(session_key) #########################################################################################################################################################
+            session_result_response = requests.get(
+                "https://api.openf1.org/v1/session_result",
+                params={'session_key': session_key}
+            )
+
+            if session_result_response.status_code == 200 and session_result_response.json() != []:
+#                print('a')#########################################################################################################################################################
+                positions = session_result_response.json()
+                cleaned_positions = remove_padding(positions)
+            elif session_result_response.status_code == 200 and session_result_response.json() == []:
+#                print('b')#########################################################################################################################################################
+                # Method 2: position endpoint
+                cleaned_positions = get_session_result_position_endpoint(session_key) ### YOU GOT TO HERE DUMBASS YOU GOTTA ADD TEH DATA PROCESSING USING CLEAD POSITIONS AS DATA INPUT AND CHECK FOR GOOD INPUT AND THE REST SHOULD EB GOOD
+            else:
+#                print('c')#########################################################################################################################################################
+                break
+
+#            print(cleaned_positions)######################################################################################################################################################
+
+
             
             # Obtain a usable, understandable and UNIQUE name to be used for each session
             nameToBeUsed = meeting_name if session.get('country_code', 'Unknown') != 'ITA' and session.get('country_code') != 'USA' and session.get('country_code') != 'ESP' else session.get('circuit_short_name', 'Unknown')
@@ -104,28 +132,17 @@ def get_all_season_results(year=2026, debug=False):
 
             # Get positions for this sessions, either with method 1( session_result endpoint) or method 2 (position endpoint)
 
-            time.sleep(0.5)  # To avoid hitting API rate limits
 
-            # Method 1: session_result endpoint
-#            print(session_key) #########################################################################################################################################################
-            session_result_response = requests.get(
-                "https://api.openf1.org/v1/session_result",
-                params={'session_key': session_key}
-            )
 
-            if session_result_response.status_code == 200 and session_result_response.json() != []:
-#                print('a')#########################################################################################################################################################
-                positions = session_result_response.json()
-                cleaned_positions = remove_padding(positions)
-            elif session_result_response.status_code == 200 and session_result_response.json() == []:
-#                print('b')#########################################################################################################################################################
-                # Method 2: position endpoint
-                cleaned_positions = get_session_result_position_endpoint(session_key) ### YOU GOT TO HERE DUMBASS YOU GOTTA ADD TEH DATA PROCESSING USING CLEAD POSITIONS AS DATA INPUT AND CHECK FOR GOOD INPUT AND THE REST SHOULD EB GOOD
-            else:
-#                print('c')#########################################################################################################################################################
-                break
 
-#            print(cleaned_positions)######################################################################################################################################################
+
+
+
+
+
+
+
+
 
             # Calculating driver's points given their position
             for driver_num, position in cleaned_positions.items():

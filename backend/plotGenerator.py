@@ -38,7 +38,8 @@ def generate_plots(year= datetime.date.today().year):
     buf1 = io.BytesIO()
     fig1.savefig(buf1, format='png')
     buf1.seek(0)
-    plt.close(fig1)
+    plt.show()
+#    plt.close(fig1)
 
     # --- Plot 2: Points History ---
     fig2, ax2 = plt.subplots(figsize=(12, 6))
@@ -47,6 +48,8 @@ def generate_plots(year= datetime.date.today().year):
     for key, values in driver_history.items():
         label = driver_names.get(key, f"Driver {key}")
         color = '#' + driver_colors.get(key, '777777')
+#        print(session_names)############################################################################################################################
+#        print(values)###################################################################################################################################
         ax2.plot(session_names, values, label=label, marker='o', color=color)
         ax2.text(session_names[-1], values[-1], f' {label}', va='center', ha='left', color=color, fontsize=10)
     ax2.set_title(f'F1 {year} Season Points History')
@@ -60,6 +63,8 @@ def generate_plots(year= datetime.date.today().year):
     buf2 = io.BytesIO()
     fig2.savefig(buf2, format='png')
     buf2.seek(0)
+#    plt.show()
     plt.close(fig2)
+
 
     return buf1, buf2
